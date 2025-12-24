@@ -1,10 +1,50 @@
 import { useTheme } from '@/modules/theme';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, {
+  EntryExitAnimationFunction,
+  LinearTransition,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToast } from './ToastContext';
 import { Toast, ToastType } from './types';
+
+const SPRING_CONFIG = { duration: 500 };
+
+// Custom entering animation - slide down from top with fade
+const toastEntering: EntryExitAnimationFunction = () => {
+  'worklet';
+  const initialValues = {
+    opacity: 0,
+    transform: [{ translateY: -80 }],
+  };
+  const animations = {
+    opacity: withTiming(1, { duration: 200 }),
+    transform: [
+      {
+        translateY: withSpring(0, SPRING_CONFIG),
+      },
+    ],
+  };
+  return { initialValues, animations };
+};
+
+// Custom exiting animation - slide up with fade
+const toastExiting: EntryExitAnimationFunction = () => {
+  'worklet';
+  const initialValues = {
+    opacity: 1,
+    transform: [{ translateY: 0 }],
+  };
+  const animations = {
+    opacity: withTiming(0, { duration: 200 }),
+    transform: [{ translateY: withSpring(-80, SPRING_CONFIG) }],
+  };
+  return { initialValues, animations };
+};
 
 function getIconForType(type: ToastType): keyof typeof Ionicons.glyphMap {
   switch (type) {
@@ -19,58 +59,11 @@ function getIconForType(type: ToastType): keyof typeof Ionicons.glyphMap {
 
 interface ToastItemProps {
   toast: Toast;
-  onHide: (id: string) => void;
-  onRemove: (id: string) => void;
+  onDismiss: (id: string) => void;
 }
 
-function ToastItem({ toast, onHide, onRemove }: ToastItemProps) {
+function ToastItem({ toast, onDismiss }: ToastItemProps) {
   const { colors } = useTheme();
-  const translateY = useRef(new Animated.Value(-100)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
-  const isAnimatingOut = useRef(false);
-
-  // Enter animation
-  useEffect(() => {
-    Animated.parallel([
-      Animated.spring(translateY, {
-        toValue: 0,
-        damping: 25,
-        stiffness: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [translateY, opacity]);
-
-  // Exit animation when isExiting becomes true
-  useEffect(() => {
-    if (toast.isExiting && !isAnimatingOut.current) {
-      isAnimatingOut.current = true;
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: -100,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        onRemove(toast.id);
-      });
-    }
-  }, [toast.isExiting, toast.id, translateY, opacity, onRemove]);
-
-  const handleDismiss = () => {
-    if (isAnimatingOut.current) return;
-    onHide(toast.id);
-  };
 
   const accentColor =
     toast.type === 'error'
@@ -119,10 +112,9 @@ function ToastItem({ toast, onHide, onRemove }: ToastItemProps) {
 
   return (
     <Animated.View
-      style={{
-        transform: [{ translateY }],
-        opacity,
-      }}
+      entering={toastEntering}
+      exiting={toastExiting}
+      layout={LinearTransition.springify().damping(28).stiffness(180).duration(500)}
     >
       <View style={styles.container}>
         <Ionicons
@@ -135,7 +127,7 @@ function ToastItem({ toast, onHide, onRemove }: ToastItemProps) {
           <Text style={styles.message}>{toast.message}</Text>
           {toast.description && <Text style={styles.description}>{toast.description}</Text>}
         </View>
-        <Pressable style={styles.closeButton} onPress={handleDismiss} hitSlop={8}>
+        <Pressable style={styles.closeButton} onPress={() => onDismiss(toast.id)} hitSlop={8}>
           <Ionicons name="close" size={18} color={colors.textSecondary} />
         </Pressable>
       </View>
@@ -144,7 +136,7 @@ function ToastItem({ toast, onHide, onRemove }: ToastItemProps) {
 }
 
 export function Toaster() {
-  const { toasts, hideToast, removeToast } = useToast();
+  const { toasts, removeToast } = useToast();
   const insets = useSafeAreaInsets();
 
   const styles = StyleSheet.create({
@@ -164,7 +156,7 @@ export function Toaster() {
   return (
     <View style={styles.container} pointerEvents="box-none">
       {toasts.map((toast) => (
-        <ToastItem key={toast.id} toast={toast} onHide={hideToast} onRemove={removeToast} />
+        <ToastItem key={toast.id} toast={toast} onDismiss={removeToast} />
       ))}
     </View>
   );

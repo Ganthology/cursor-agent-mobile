@@ -20,5 +20,4 @@ export interface Toast {
   message: string;
   description?: string;
   duration: number;
-  isExiting?: boolean;
 }

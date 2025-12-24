@@ -7,7 +7,6 @@ const MAX_TOASTS = 3;
 interface ToastContextValue {
   toasts: Toast[];
   showToast: (type: ToastType, message: string, options?: ToastOptions) => void;
-  hideToast: (id: string) => void;
   removeToast: (id: string) => void;
 }
 
@@ -28,7 +27,6 @@ export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const timeoutRefs = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
-  // Actually remove toast from array (called after exit animation completes)
   const removeToast = useCallback((id: string) => {
     // Clear timeout if exists
     const timeout = timeoutRefs.current.get(id);
@@ -37,13 +35,6 @@ export function ToastProvider({ children }: ToastProviderProps) {
       timeoutRefs.current.delete(id);
     }
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  }, []);
-
-  // Mark toast as exiting to trigger exit animation
-  const hideToast = useCallback((id: string) => {
-    setToasts((prev) =>
-      prev.map((toast) => (toast.id === id ? { ...toast, isExiting: true } : toast))
-    );
   }, []);
 
   const showToast = useCallback((type: ToastType, message: string, options?: ToastOptions) => {
@@ -68,10 +59,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
     // Set auto-dismiss timeout for the new toast
     const timeout = setTimeout(() => {
       timeoutRefs.current.delete(id);
-      // Mark as exiting to trigger exit animation (actual removal happens after animation)
-      setToasts((prev) =>
-        prev.map((toast) => (toast.id === id ? { ...toast, isExiting: true } : toast))
-      );
+      setToasts((prev) => prev.filter((toast) => toast.id !== id));
     }, duration);
 
     timeoutRefs.current.set(id, timeout);
@@ -92,9 +80,10 @@ export function ToastProvider({ children }: ToastProviderProps) {
 
   // Cleanup all timeouts on unmount
   useEffect(() => {
+    const refs = timeoutRefs.current;
     return () => {
-      timeoutRefs.current.forEach((timeout) => clearTimeout(timeout));
-      timeoutRefs.current.clear();
+      refs.forEach((timeout) => clearTimeout(timeout));
+      refs.clear();
     };
   }, []);
 
@@ -104,7 +93,6 @@ export function ToastProvider({ children }: ToastProviderProps) {
   const value: ToastContextValue = {
     toasts,
     showToast,
-    hideToast,
     removeToast,
   };
 
