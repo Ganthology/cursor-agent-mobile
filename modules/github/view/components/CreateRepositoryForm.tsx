@@ -1,5 +1,6 @@
 import { useApiKey } from '@/modules/apiKeyManagement/context/ApiKeyContext';
 import { borderRadius, borderWidth, spacing, typography, useTheme } from '@/modules/theme';
+import { toast } from '@/modules/toast/toast';
 import { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
@@ -49,6 +50,7 @@ export const CreateRepositoryForm: React.FC<CreateRepositoryFormProps> = ({ onSu
     },
     onSuccess: (newRepo) => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.success('Repository created', { description: newRepo.fullName });
       queryClient.invalidateQueries({ queryKey: ['github-repositories'] });
       resetForm();
       onSuccess?.(newRepo);
