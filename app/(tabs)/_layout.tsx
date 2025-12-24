@@ -53,9 +53,9 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     tabBar: {
       flexDirection: 'row',
       backgroundColor: colors.surface,
-      borderRadius: 28,
-      paddingVertical: 8,
-      paddingHorizontal: 8,
+      borderRadius: 60,
+      paddingVertical: 4,
+      paddingHorizontal: 4,
       borderWidth: 1,
       borderColor: colors.border,
       // Shadow
@@ -70,7 +70,7 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
       alignItems: 'center',
       justifyContent: 'center',
       paddingVertical: 8,
-      borderRadius: 20,
+      borderRadius: 60,
     },
     tabItemActive: {
       backgroundColor: colors.accentMuted,

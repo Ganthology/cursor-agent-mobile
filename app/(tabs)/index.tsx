@@ -2,7 +2,6 @@ import { useApiKey } from '@/modules/apiKeyManagement/context/ApiKeyContext';
 import { CreateAgentForm } from '@/modules/cursor/view/components/CreateAgentForm';
 import { typography, useTheme } from '@/modules/theme';
 import * as Haptics from 'expo-haptics';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -15,45 +14,6 @@ const createStyles = (colors: any) =>
     container: {
       flex: 1,
       backgroundColor: colors.background,
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 8,
-    },
-    headerLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-    },
-    logoContainer: {
-      width: 32,
-      height: 32,
-      borderRadius: 8,
-      backgroundColor: colors.surface,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    logoText: {
-      fontFamily: typography.fontFamily.mono,
-      fontSize: 16,
-      fontWeight: '700',
-      color: colors.textPrimary,
-    },
-    headerTitle: {
-      fontFamily: typography.fontFamily.sans,
-      color: colors.textPrimary,
-      fontSize: 18,
-      fontWeight: '600',
-    },
-    avatar: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: colors.surface,
     },
     heroSection: {
       paddingHorizontal: 16,
@@ -153,14 +113,6 @@ export default function ComposeTab() {
   if (!cursorApiKey) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <View style={styles.logoContainer}>
-              <Text style={styles.logoText}>$</Text>
-            </View>
-            <Text style={styles.headerTitle}>New Agent</Text>
-          </View>
-        </View>
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>
             Configure your Cursor API key in Settings{'\n'}to create agents
@@ -175,16 +127,6 @@ export default function ComposeTab() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>$</Text>
-          </View>
-          <Text style={styles.headerTitle}>New Agent</Text>
-        </View>
-        <Image source={{ uri: 'https://github.com/identicons/cursor.png' }} style={styles.avatar} />
-      </View>
-
       <View style={styles.heroSection}>
         <Text style={styles.heroTitle}>What are we</Text>
         <Text style={styles.heroSubtitle}>building today?</Text>
