@@ -6,11 +6,14 @@ import { useRepositories } from '@/modules/github/view/hooks/useRepositories';
 import { useModal } from '@/modules/modal/context/GlobalModalContext';
 import { borderRadius, borderWidth, spacing, useTheme } from '@/modules/theme';
 import { toast } from '@/modules/toast/toast';
+import { Ionicons } from '@expo/vector-icons';
+import { Galeria } from '@nandorojo/galeria';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { CursorCloudAgentsRepositoryImpl } from '../../data/repository/CursorCloudAgentsRepositoryImpl';
 import { useModels } from '../hooks/useModels';
 import { AgentPromptInput } from './AgentPromptInput';
@@ -246,17 +249,15 @@ export const CreateAgentForm: React.FC<CreateAgentFormProps> = ({ onSuccess }) =
       position: 'absolute',
       top: -6,
       right: -6,
-      backgroundColor: colors.status.error,
-      width: 18,
-      height: 18,
-      borderRadius: 9,
+      backgroundColor: colors.surfaceElevated,
+      borderWidth: 1,
+      borderColor: colors.border,
+      width: 20,
+      height: 20,
+      borderRadius: 10,
       justifyContent: 'center',
       alignItems: 'center',
-    },
-    removeImageText: {
-      color: '#fff',
-      fontSize: 10,
-      fontWeight: 'bold',
+      zIndex: 10,
     },
     toolbar: {
       flexDirection: 'row',
@@ -293,20 +294,24 @@ export const CreateAgentForm: React.FC<CreateAgentFormProps> = ({ onSuccess }) =
 
         {/* Attached Images */}
         {images.length > 0 && (
-          <ScrollView horizontal style={styles.imageList} showsHorizontalScrollIndicator={false}>
-            {images.map((uri, index) => (
-              <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri }} style={styles.image} />
-                <IconButton
-                  icon="close"
-                  size="sm"
-                  variant="ghost"
-                  onPress={() => handleRemoveImage(index)}
-                  style={styles.removeImageButton}
-                />
-              </View>
-            ))}
-          </ScrollView>
+          <Galeria urls={images}>
+            <ScrollView horizontal style={styles.imageList} showsHorizontalScrollIndicator={false}>
+              {images.map((uri, index) => (
+                <View key={uri} style={styles.imageContainer}>
+                  <Galeria.Image index={index} style={styles.image}>
+                    <Image source={{ uri }} style={styles.image} contentFit="cover" />
+                  </Galeria.Image>
+                  <Pressable
+                    style={styles.removeImageButton}
+                    onPress={() => handleRemoveImage(index)}
+                    hitSlop={8}
+                  >
+                    <Ionicons name="close" size={12} color={colors.textSecondary} />
+                  </Pressable>
+                </View>
+              ))}
+            </ScrollView>
+          </Galeria>
         )}
       </View>
 
