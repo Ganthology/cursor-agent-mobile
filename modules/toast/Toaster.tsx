@@ -19,14 +19,17 @@ function getIconForType(type: ToastType): keyof typeof Ionicons.glyphMap {
 
 interface ToastItemProps {
   toast: Toast;
-  onDismiss: (id: string) => void;
+  onHide: (id: string) => void;
+  onRemove: (id: string) => void;
 }
 
-function ToastItem({ toast, onDismiss }: ToastItemProps) {
+function ToastItem({ toast, onHide, onRemove }: ToastItemProps) {
   const { colors } = useTheme();
   const translateY = useRef(new Animated.Value(-100)).current;
   const opacity = useRef(new Animated.Value(0)).current;
+  const isAnimatingOut = useRef(false);
 
+  // Enter animation
   useEffect(() => {
     Animated.parallel([
       Animated.spring(translateY, {
@@ -41,24 +44,32 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [translateY, opacity]);
+
+  // Exit animation when isExiting becomes true
+  useEffect(() => {
+    if (toast.isExiting && !isAnimatingOut.current) {
+      isAnimatingOut.current = true;
+      Animated.parallel([
+        Animated.timing(translateY, {
+          toValue: -100,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        onRemove(toast.id);
+      });
+    }
+  }, [toast.isExiting, toast.id, translateY, opacity, onRemove]);
 
   const handleDismiss = () => {
-    Animated.parallel([
-      Animated.spring(translateY, {
-        toValue: -100,
-        damping: 25,
-        stiffness: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onDismiss(toast.id);
-    });
+    if (isAnimatingOut.current) return;
+    onHide(toast.id);
   };
 
   const accentColor =
@@ -133,7 +144,7 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
 }
 
 export function Toaster() {
-  const { toasts, hideToast } = useToast();
+  const { toasts, hideToast, removeToast } = useToast();
   const insets = useSafeAreaInsets();
 
   const styles = StyleSheet.create({
@@ -153,7 +164,7 @@ export function Toaster() {
   return (
     <View style={styles.container} pointerEvents="box-none">
       {toasts.map((toast) => (
-        <ToastItem key={toast.id} toast={toast} onDismiss={hideToast} />
+        <ToastItem key={toast.id} toast={toast} onHide={hideToast} onRemove={removeToast} />
       ))}
     </View>
   );
