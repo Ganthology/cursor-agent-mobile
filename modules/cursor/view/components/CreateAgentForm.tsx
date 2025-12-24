@@ -5,6 +5,7 @@ import { useBranches } from '@/modules/github/view/hooks/useBranches';
 import { useRepositories } from '@/modules/github/view/hooks/useRepositories';
 import { useModal } from '@/modules/modal/context/GlobalModalContext';
 import { borderRadius, borderWidth, spacing, useTheme } from '@/modules/theme';
+import { toast } from '@/modules/toast/toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
@@ -165,6 +166,7 @@ export const CreateAgentForm: React.FC<CreateAgentFormProps> = ({ onSuccess }) =
     },
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.success('Agent created', { description: 'Your agent is now running' });
       setPrompt('');
       setModel('');
       setRepository('');
