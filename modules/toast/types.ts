@@ -21,4 +21,3 @@ export interface Toast {
   description?: string;
   duration: number;
 }
-

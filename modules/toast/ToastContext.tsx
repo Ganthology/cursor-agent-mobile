@@ -7,7 +7,7 @@ const MAX_TOASTS = 3;
 interface ToastContextValue {
   toasts: Toast[];
   showToast: (type: ToastType, message: string, options?: ToastOptions) => void;
-  hideToast: (id: string) => void;
+  removeToast: (id: string) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -27,7 +27,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const timeoutRefs = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
-  const hideToast = useCallback((id: string) => {
+  const removeToast = useCallback((id: string) => {
     // Clear timeout if exists
     const timeout = timeoutRefs.current.get(id);
     if (timeout) {
@@ -80,9 +80,10 @@ export function ToastProvider({ children }: ToastProviderProps) {
 
   // Cleanup all timeouts on unmount
   useEffect(() => {
+    const refs = timeoutRefs.current;
     return () => {
-      timeoutRefs.current.forEach((timeout) => clearTimeout(timeout));
-      timeoutRefs.current.clear();
+      refs.forEach((timeout) => clearTimeout(timeout));
+      refs.clear();
     };
   }, []);
 
@@ -92,7 +93,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
   const value: ToastContextValue = {
     toasts,
     showToast,
-    hideToast,
+    removeToast,
   };
 
   return <ToastContext.Provider value={value}>{children}</ToastContext.Provider>;
