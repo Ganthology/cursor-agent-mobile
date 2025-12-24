@@ -5,8 +5,8 @@
   },
   "build": {
     "base": {
-      "node": {
-        "installCommand": "npm ci --legacy-peer-deps"
+      "env": {
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
       }
     },
     "development": {
